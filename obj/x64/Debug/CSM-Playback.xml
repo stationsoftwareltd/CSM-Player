@@ -1,0 +1,111 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+CSM-Playback
+</name>
+</assembly>
+<members>
+<member name="T:CSM_Playback.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources._stop">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.audio">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.download">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.forward">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.frame">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.mute">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.open2">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.pause">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.PauseBold">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.play">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.reverse">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.rewind">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.save">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.save1">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.security_unlock">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.snapshot">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+<member name="P:CSM_Playback.My.Resources.Resources.stop_download">
+<summary>
+  Looks up a localized resource of type DevExpress.Utils.Svg.SvgImage.
+</summary>
+</member>
+</members>
+</doc>

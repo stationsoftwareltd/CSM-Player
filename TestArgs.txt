@@ -1,0 +1,11 @@
+﻿Playback Arguments:
+
+/dbserver=localhost /dbport=3307 /dbname=csm /dbuser=user /dbpass=StMaCoUk2026# /channel=34 /time=20260312120000 /length=2
+
+Live Arguments:
+
+/dbserver=localhost /dbport=3307 /dbname=csm /dbuser=user /dbpass=StMaCoUk2026# /channel=34 /time=00000000000000
+
+Configuration:
+
+/dbserver=localhost /dbport=3307 /dbname=csm /dbuser=user /dbpass=StMaCoUk2026# /config

@@ -37,6 +37,7 @@ Public Class frmMain
 
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.Text &= $" - v{My.Application.Info.Version.ToString()}"
         ' 1. Parse Command Line Flags
         Dim args As String() = Environment.GetCommandLineArgs()
 
@@ -124,19 +125,81 @@ Public Class frmMain
 
         Me.ClientSize = New Drawing.Size(finalWidth, finalHeight)
 
+        ' --- Hide the Playback Controls for Live View ---
+        ' (If you named your time variable something other than m_time, update it here)
+        If m_timestamp = "00000000000000" Then
+
+            ' 1. Hide the panel (Change "Panel1" to the actual name of your top panel)
+            PanelControl1.Visible = False
+
+            ' 2. Physically shrink the window by the height of that hidden panel
+            Me.Height = Me.Height - PanelControl1.Height
+
+        End If
+
         ' 9. Position the window
         If m_x >= 0 AndAlso m_y >= 0 Then
-            ' Explicit coordinates provided (e.g., they clicked a specific icon on the map)
             Me.StartPosition = FormStartPosition.Manual
-            Me.Location = New Point(m_x, m_y)
+            Dim startPoint As New Point(m_x, m_y)
+
+            Dim currentScreen As Screen = Screen.FromPoint(startPoint)
+            Dim safeArea As Rectangle = currentScreen.WorkingArea
+
+            ' --- THE FIX: Add a strict 50-pixel buffer to account for the Title Bar ---
+            Dim bottomBuffer As Integer = 50
+
+            ' 2. Check the Right Edge
+            If startPoint.X + Me.Width > safeArea.Right Then
+                startPoint.X = safeArea.Right - Me.Width
+            End If
+
+            ' 3. Check the Bottom Edge (Applying the Buffer!)
+            If startPoint.Y + Me.Height > (safeArea.Bottom - bottomBuffer) Then
+                startPoint.Y = safeArea.Bottom - Me.Height - bottomBuffer
+            End If
+
+            ' 4. Safety net for Top/Left edges
+            If startPoint.X < safeArea.Left Then startPoint.X = safeArea.Left
+            If startPoint.Y < safeArea.Top Then startPoint.Y = safeArea.Top
+
+            Me.Location = startPoint
         Else
-            ' No coordinates provided (e.g., launched from an incident log or menu)
             Me.StartPosition = FormStartPosition.CenterScreen
         End If
 
-        ' Expand the PictureBox to fill the remaining space
+        ' Expand the PictureBox and force handle creation
         PictureBox1.Dock = DockStyle.Fill
         PictureBox1.BringToFront()
+        Me.CreateControl()
+        PictureBox1.CreateControl()
+    End Sub
+
+    Private Sub frmMain_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
+        ' By the time the Shown event fires, Windows has completely finished 
+        ' applying display scaling, drop shadows, and title bars. 
+        ' Me.Bottom is now 100% mathematically accurate.
+
+        Dim currentScreen As Screen = Screen.FromControl(Me)
+        Dim safeArea As Rectangle = currentScreen.WorkingArea
+
+        ' 1. The Bottom Edge Check
+        If Me.Bottom > safeArea.Bottom Then
+            ' Find out EXACTLY how many pixels it is bleeding over the taskbar
+            Dim overflowPixels As Integer = Me.Bottom - safeArea.Bottom
+
+            ' Physically drag the top of the form up by that exact amount (plus a 10px safety gap)
+            Me.Top = Me.Top - overflowPixels - 10
+        End If
+
+        ' 2. The Right Edge Check
+        If Me.Right > safeArea.Right Then
+            Dim overflowPixels As Integer = Me.Right - safeArea.Right
+            Me.Left = Me.Left - overflowPixels - 10
+        End If
+
+        ' 3. Safety net for Top/Left edges
+        If Me.Top < safeArea.Top Then Me.Top = safeArea.Top
+        If Me.Left < safeArea.Left Then Me.Left = safeArea.Left
     End Sub
 
 
@@ -150,8 +213,23 @@ Public Class frmMain
         previewInfo.bBlocked = True
         previewInfo.hPlayWnd = PictureBox1.Handle
 
-        m_lRealHandle = CHCNetSDK.NET_DVR_RealPlay_V40(m_lUserID, previewInfo, Nothing, IntPtr.Zero)
+        ' --- NEW RETRY LOGIC TO PREVENT ERROR 0 ---
+        Dim retryCount As Integer = 0
+        Dim maxRetries As Integer = 4 ' Give the NVR up to 1 second to release the old socket
+        m_lRealHandle = -1
 
+        While m_lRealHandle < 0 AndAlso retryCount <= maxRetries
+            ' Attempt to grab the video stream
+            m_lRealHandle = CHCNetSDK.NET_DVR_RealPlay_V40(m_lUserID, previewInfo, Nothing, IntPtr.Zero)
+
+            ' If it fails, pause for a quarter-second and try again
+            If m_lRealHandle < 0 Then
+                retryCount += 1
+                System.Threading.Thread.Sleep(250)
+            End If
+        End While
+
+        ' If it STILL failed after 4 retries, then show the error message
         If m_lRealHandle < 0 Then
             Dim errorCode As UInteger = CHCNetSDK.NET_DVR_GetLastError()
             MessageBox.Show($"Failed to start Live View on channel {channelId}. Error Code: {errorCode}")

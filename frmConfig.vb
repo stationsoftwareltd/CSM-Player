@@ -11,6 +11,7 @@ Public Class frmConfig
 
     ' --- 1. LOAD THE DATA ON STARTUP ---
     Private Sub frmConfig_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.Text &= $" - v{My.Application.Info.Version.ToString()}"
         Try
             Using conn As New MySqlConnection(DBConnectionString)
                 conn.Open()
@@ -67,9 +68,6 @@ Public Class frmConfig
             Dim errorCode As UInteger = CHCNetSDK.NET_DVR_GetLastError()
             MessageBox.Show($"Login failed! Error Code: {errorCode}", "Test Login", MessageBoxButtons.OK, MessageBoxIcon.Error)
         Else
-            MessageBox.Show("Login successful! Loading cameras into the list...", "Test Login", MessageBoxButtons.OK, MessageBoxIcon.Information)
-
-            ' Trigger your existing TreeList method to prove the connection works
             LoadCameras(deviceInfo)
         End If
     End Sub
@@ -110,7 +108,7 @@ Public Class frmConfig
     End Sub
 
     Public Sub LoadCameras(ByRef deviceInfo As CHCNetSDK.NET_DVR_DEVICEINFO_V30)
-        ' --- NEW: LOAD DESCRIPTIONS FROM DATABASE ---
+        ' --- 1. LOAD DESCRIPTIONS FROM DATABASE ---
         Dim cameraDescriptions As New Dictionary(Of Integer, String)()
         Try
             Using conn As New MySqlConnection(DBConnectionString)
@@ -130,7 +128,33 @@ Public Class frmConfig
             Console.WriteLine("Could not load descriptions: " & ex.Message)
         End Try
 
-        ' 1. Set up the Columns
+        ' --- NEW: 2. LOAD GATE ASSIGNMENTS FROM DATABASE ---
+        Dim g1in As Integer = 0
+        Dim g1out As Integer = 0
+        Dim g2in As Integer = 0
+        Dim g2out As Integer = 0
+
+        Try
+            Using conn As New MySqlConnection(DBConnectionString)
+                conn.Open()
+                ' Pull the saved channels from the config_net2 table
+                Dim queryConfig As String = "SELECT gate1in, gate1out, gate2in, gate2out FROM config_net2 LIMIT 1"
+                Using cmd As New MySqlCommand(queryConfig, conn)
+                    Using reader As MySqlDataReader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            If Not IsDBNull(reader("gate1in")) Then g1in = Convert.ToInt32(reader("gate1in"))
+                            If Not IsDBNull(reader("gate1out")) Then g1out = Convert.ToInt32(reader("gate1out"))
+                            If Not IsDBNull(reader("gate2in")) Then g2in = Convert.ToInt32(reader("gate2in"))
+                            If Not IsDBNull(reader("gate2out")) Then g2out = Convert.ToInt32(reader("gate2out"))
+                        End If
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Console.WriteLine("Could not load net2 gate assignments: " & ex.Message)
+        End Try
+
+        ' 3. Set up the Columns
         TreeListCameras.Columns.Clear()
 
         Dim colName = TreeListCameras.Columns.Add()
@@ -143,21 +167,33 @@ Public Class frmConfig
         colChannel.VisibleIndex = 1
         colChannel.Visible = False
 
-        ' --- NEW: DESCRIPTION COLUMN ---
         Dim colDesc = TreeListCameras.Columns.Add()
         colDesc.Caption = "Description"
         colDesc.VisibleIndex = 2
-        colDesc.OptionsColumn.AllowEdit = True ' This is the only editable column!
+        colDesc.OptionsColumn.AllowEdit = True
 
-        ' 2. Clear old data and initialize the root node
+        ' --- NEW: 4. SETUP THE GATE DROPDOWN COLUMN ---
+        Dim colGate = TreeListCameras.Columns.Add()
+        colGate.Caption = "Gate Assignment"
+        colGate.VisibleIndex = 3
+        colGate.Visible = True
+        colGate.OptionsColumn.AllowEdit = True
+
+        ' Create the combo box for the column
+        Dim repoGateCombo As New DevExpress.XtraEditors.Repository.RepositoryItemComboBox()
+        repoGateCombo.Items.AddRange({"Not assigned", "Gate 1 (IN)", "Gate 1 (OUT)", "Gate 2 (IN)", "Gate 2 (OUT)"})
+        repoGateCombo.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor
+        TreeListCameras.RepositoryItems.Add(repoGateCombo)
+        colGate.ColumnEdit = repoGateCombo
+
+        ' 5. Clear old data and initialize the root node (Note the 4 elements now!)
         TreeListCameras.ClearNodes()
-        Dim rootNodeData As Object() = {"Hikvision NVR", "Root", ""}
+        Dim rootNodeData As Object() = {"Hikvision NVR", "Root", "", ""}
 
-        ' Using the strict casting for the root node as previously noted
+        ' Keeping the strict casting for the root node as required
         Dim rootNode = TreeListCameras.AppendNode(rootNodeData, CType(Nothing, TreeListNode))
 
-        ' ... (Keep your IP network query logic exactly the same) ...
-        ' 4. Query the NVR for the active IP channels
+        ' 6. Query the NVR for the active IP channels
         Dim ipParaCfg As New CHCNetSDK.NET_DVR_IPPARACFG_V40()
         Dim size As Integer = Marshal.SizeOf(ipParaCfg)
         Dim ptrIpParaCfg As IntPtr = Marshal.AllocHGlobal(size)
@@ -171,18 +207,15 @@ Public Class frmConfig
 
             Dim startDChan As Integer = deviceInfo.byStartDChan
             If startDChan < 33 Then startDChan = 33
-
             Dim totalIpChannels As Integer = deviceInfo.byIPChanNum + (CInt(deviceInfo.byHighDChanNum) * 256)
 
-            ' 5. Loop through the slots and filter for active cameras
+            ' 7. Loop through the slots and filter for active cameras
             For i As Integer = 0 To totalIpChannels - 1
                 If i < ipParaCfg.struIPDevInfo.Length Then
-
-                    ' This means a camera is configured in this slot
                     If ipParaCfg.struIPDevInfo(i).byEnable = 1 Then
                         Dim channelNum As Integer = startDChan + i
 
-                        ' --- GET THE REAL-TIME NETWORK STATUS ---
+                        ' Get Online Status
                         Dim isOnline As Boolean = False
                         Try
                             isOnline = (ipParaCfg.struStreamMode(i).uGetStream.byUnion(0) = 1)
@@ -192,24 +225,30 @@ Public Class frmConfig
 
                         Dim cameraName As String = If(isOnline, $"IP Camera {channelNum}", $"IP Camera {channelNum} (Offline)")
 
-                        ' --- NEW: LOOK UP THE DESCRIPTION ---
+                        ' Look up the Description
                         Dim currentDesc As String = ""
                         If cameraDescriptions.ContainsKey(channelNum) Then
                             currentDesc = cameraDescriptions(channelNum)
                         End If
 
-                        ' Add all three columns to the TreeList (Name, Channel, Description)
-                        Dim camNode = TreeListCameras.AppendNode(New Object() {cameraName, channelNum, currentDesc}, rootNode)
+                        ' --- NEW: Look up the Gate Assignment ---
+                        Dim gateStatus As String = "Not assigned"
+                        If channelNum = g1in Then gateStatus = "Gate 1 (IN)"
+                        If channelNum = g1out Then gateStatus = "Gate 1 (OUT)"
+                        If channelNum = g2in Then gateStatus = "Gate 2 (IN)"
+                        If channelNum = g2out Then gateStatus = "Gate 2 (OUT)"
 
+                        ' Add all FOUR columns to the TreeList
+                        Dim camNode = TreeListCameras.AppendNode(New Object() {cameraName, channelNum, currentDesc, gateStatus}, rootNode)
                         camNode.Tag = isOnline
                     End If
-
                 End If
             Next
         End If
 
         Marshal.FreeHGlobal(ptrIpParaCfg)
         TreeListCameras.ExpandAll()
+        TreeListCameras.BestFitColumns()
     End Sub
 
     Private Sub StopLivePreview()
@@ -241,18 +280,16 @@ Public Class frmConfig
     End Sub
 
     Private Sub TreeListCameras_CellValueChanged(sender As Object, e As DevExpress.XtraTreeList.CellValueChangedEventArgs) Handles TreeListCameras.CellValueChanged
-        ' We only care if they edited the Description column, and not the main folder node
-        If e.Column.Caption = "Description" AndAlso e.Node.ParentNode IsNot Nothing Then
+        If e.Node.ParentNode Is Nothing Then Return ' Ignore the root node
 
-            Dim channelID As Integer = Convert.ToInt32(e.Node.GetValue(1))
+        Dim channelID As Integer = Convert.ToInt32(e.Node.GetValue(1))
+
+        ' --- HANDLE DESCRIPTION CHANGES ---
+        If e.Column.Caption = "Description" Then
             Dim newDescription As String = e.Value.ToString()
-
             Try
                 Using conn As New MySqlConnection(DBConnectionString)
                     conn.Open()
-
-                    ' We check if the row exists first. 
-                    ' (If physical_id is a Primary Key, you could use ON DUPLICATE KEY UPDATE instead)
                     Dim checkQuery As String = "SELECT COUNT(*) FROM config_camera WHERE physical_id = @id"
                     Dim exists As Boolean = False
 
@@ -261,12 +298,9 @@ Public Class frmConfig
                         exists = (Convert.ToInt32(checkCmd.ExecuteScalar()) > 0)
                     End Using
 
-                    Dim saveQuery As String
-                    If exists Then
-                        saveQuery = "UPDATE config_camera SET description = @desc WHERE physical_id = @id"
-                    Else
-                        saveQuery = "INSERT INTO config_camera (physical_id, description) VALUES (@id, @desc)"
-                    End If
+                    Dim saveQuery As String = If(exists,
+                        "UPDATE config_camera SET description = @desc WHERE physical_id = @id",
+                        "INSERT INTO config_camera (physical_id, description) VALUES (@id, @desc)")
 
                     Using saveCmd As New MySqlCommand(saveQuery, conn)
                         saveCmd.Parameters.AddWithValue("@id", channelID)
@@ -274,11 +308,52 @@ Public Class frmConfig
                         saveCmd.ExecuteNonQuery()
                     End Using
                 End Using
-
             Catch ex As Exception
-                MessageBox.Show($"Failed to save description to database: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                MessageBox.Show($"Failed to save description: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End Try
 
+            ' --- NEW: HANDLE GATE ASSIGNMENT CHANGES ---
+        ElseIf e.Column.Caption = "Gate Assignment" Then
+            Dim selectedGate As String = e.Value.ToString()
+
+            Try
+                Using conn As New MySqlConnection(DBConnectionString)
+                    conn.Open()
+
+                    ' 1. Wipe previous assignments for this specific camera
+                    ' This ensures a camera isn't accidentally assigned to multiple gates at once
+                    Dim sqlClear As String = "UPDATE config_net2 SET gate1in = 0 WHERE gate1in = @id; " &
+                                             "UPDATE config_net2 SET gate1out = 0 WHERE gate1out = @id; " &
+                                             "UPDATE config_net2 SET gate2in = 0 WHERE gate2in = @id; " &
+                                             "UPDATE config_net2 SET gate2out = 0 WHERE gate2out = @id;"
+                    Using cmdClear As New MySqlCommand(sqlClear, conn)
+                        cmdClear.Parameters.AddWithValue("@id", channelID)
+                        cmdClear.ExecuteNonQuery()
+                    End Using
+
+                    ' 2. Save the new assignment
+                    If selectedGate <> "Not assigned" Then
+                        Dim targetField As String = ""
+                        Select Case selectedGate
+                            Case "Gate 1 (IN)" : targetField = "gate1in"
+                            Case "Gate 1 (OUT)" : targetField = "gate1out"
+                            Case "Gate 2 (IN)" : targetField = "gate2in"
+                            Case "Gate 2 (OUT)" : targetField = "gate2out"
+                        End Select
+
+                        If targetField <> "" Then
+                            ' Update the single config_net2 record
+                            Dim sqlUpdate As String = $"UPDATE config_net2 SET {targetField} = @id"
+                            Using cmdUpdate As New MySqlCommand(sqlUpdate, conn)
+                                cmdUpdate.Parameters.AddWithValue("@id", channelID)
+                                cmdUpdate.ExecuteNonQuery()
+                            End Using
+                        End If
+                    End If
+                End Using
+            Catch ex As Exception
+                MessageBox.Show($"Failed to save gate assignment: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End Try
         End If
     End Sub
 

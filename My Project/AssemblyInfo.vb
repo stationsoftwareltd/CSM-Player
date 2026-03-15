@@ -9,10 +9,10 @@ Imports System.Runtime.InteropServices
 ' Review the values of the assembly attributes
 
 <Assembly: AssemblyTitle("CSM-Playback")>
-<Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("")>
+<Assembly: AssemblyDescription("Player for HikVision NVR Playback")>
+<Assembly: AssemblyCompany("Station Doftware Ltd")>
 <Assembly: AssemblyProduct("CSM-Playback")>
-<Assembly: AssemblyCopyright("Copyright ©  2026")>
+<Assembly: AssemblyCopyright("Copyright ©  2026 Station Software Ltd")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -28,5 +28,5 @@ Imports System.Runtime.InteropServices
 '      Revision
 '
 
-<Assembly: AssemblyVersion("1.0.0.0")>
-<Assembly: AssemblyFileVersion("1.0.0.0")>
+<Assembly: AssemblyVersion("2026.3.16.1")>
+<Assembly: AssemblyFileVersion("2026.3.16.1")>

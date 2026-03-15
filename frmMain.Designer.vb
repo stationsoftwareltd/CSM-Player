@@ -23,6 +23,7 @@ Partial Class frmMain
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
         Me.PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         Me.progressBarDownload = New DevExpress.XtraEditors.ProgressBarControl()
         Me.butDownload = New DevExpress.XtraEditors.SimpleButton()
@@ -98,7 +99,7 @@ Partial Class frmMain
         Me.labTime.Appearance.Options.UseFont = True
         Me.labTime.Location = New System.Drawing.Point(426, 73)
         Me.labTime.Name = "labTime"
-        Me.labTime.Size = New System.Drawing.Size(58, 16)
+        Me.labTime.Size = New System.Drawing.Size(70, 18)
         Me.labTime.TabIndex = 13
         Me.labTime.Text = "00:00:00"
         '
@@ -110,7 +111,7 @@ Partial Class frmMain
         Me.trackBarProgress.Properties.LabelAppearance.Options.UseTextOptions = True
         Me.trackBarProgress.Properties.LabelAppearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Center
         Me.trackBarProgress.Properties.Maximum = 100
-        Me.trackBarProgress.Size = New System.Drawing.Size(408, 45)
+        Me.trackBarProgress.Size = New System.Drawing.Size(408, 50)
         Me.trackBarProgress.TabIndex = 12
         '
         'labSpeed
@@ -119,7 +120,7 @@ Partial Class frmMain
         Me.labSpeed.Appearance.Options.UseFont = True
         Me.labSpeed.Location = New System.Drawing.Point(296, 31)
         Me.labSpeed.Name = "labSpeed"
-        Me.labSpeed.Size = New System.Drawing.Size(15, 16)
+        Me.labSpeed.Size = New System.Drawing.Size(19, 18)
         Me.labSpeed.TabIndex = 11
         Me.labSpeed.Text = "x1"
         '
@@ -129,7 +130,7 @@ Partial Class frmMain
         Me.LabelControl2.Appearance.Options.UseFont = True
         Me.LabelControl2.Location = New System.Drawing.Point(362, 6)
         Me.LabelControl2.Name = "LabelControl2"
-        Me.LabelControl2.Size = New System.Drawing.Size(45, 11)
+        Me.LabelControl2.Size = New System.Drawing.Size(46, 12)
         Me.LabelControl2.TabIndex = 10
         Me.LabelControl2.Text = "Direction"
         '
@@ -139,7 +140,7 @@ Partial Class frmMain
         Me.LabelControl1.Appearance.Options.UseFont = True
         Me.LabelControl1.Location = New System.Drawing.Point(173, 7)
         Me.LabelControl1.Name = "LabelControl1"
-        Me.LabelControl1.Size = New System.Drawing.Size(105, 11)
+        Me.LabelControl1.Size = New System.Drawing.Size(105, 12)
         Me.LabelControl1.TabIndex = 9
         Me.LabelControl1.Text = "---------Speed ---------"
         '
@@ -250,6 +251,7 @@ Partial Class frmMain
         Me.ClientSize = New System.Drawing.Size(784, 630)
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.PanelControl1)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "frmMain"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "CSM Playback"

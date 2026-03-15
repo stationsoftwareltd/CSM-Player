@@ -19,6 +19,7 @@ Partial Class frmConfig
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmConfig))
         Me.TreeListCameras = New DevExpress.XtraTreeList.TreeList()
         Me.PanelControl1 = New DevExpress.XtraEditors.PanelControl()
         Me.butSave = New DevExpress.XtraEditors.SimpleButton()
@@ -53,7 +54,7 @@ Partial Class frmConfig
         Me.TreeListCameras.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TreeListCameras.Location = New System.Drawing.Point(0, 66)
         Me.TreeListCameras.Name = "TreeListCameras"
-        Me.TreeListCameras.Size = New System.Drawing.Size(834, 328)
+        Me.TreeListCameras.Size = New System.Drawing.Size(850, 347)
         Me.TreeListCameras.TabIndex = 3
         '
         'PanelControl1
@@ -75,7 +76,7 @@ Partial Class frmConfig
         Me.PanelControl1.Dock = System.Windows.Forms.DockStyle.Top
         Me.PanelControl1.Location = New System.Drawing.Point(0, 0)
         Me.PanelControl1.Name = "PanelControl1"
-        Me.PanelControl1.Size = New System.Drawing.Size(834, 66)
+        Me.PanelControl1.Size = New System.Drawing.Size(850, 66)
         Me.PanelControl1.TabIndex = 4
         '
         'butSave
@@ -94,7 +95,7 @@ Partial Class frmConfig
         Me.butLogin.Name = "butLogin"
         Me.butLogin.Size = New System.Drawing.Size(99, 38)
         Me.butLogin.TabIndex = 25
-        Me.butLogin.Text = "Test Login"
+        Me.butLogin.Text = "Login"
         '
         'tbHeight
         '
@@ -202,9 +203,9 @@ Partial Class frmConfig
         '
         Me.pictureBoxPreview.BackColor = System.Drawing.Color.Black
         Me.pictureBoxPreview.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.pictureBoxPreview.Location = New System.Drawing.Point(0, 394)
+        Me.pictureBoxPreview.Location = New System.Drawing.Point(0, 413)
         Me.pictureBoxPreview.Name = "pictureBoxPreview"
-        Me.pictureBoxPreview.Size = New System.Drawing.Size(834, 362)
+        Me.pictureBoxPreview.Size = New System.Drawing.Size(850, 362)
         Me.pictureBoxPreview.TabIndex = 5
         Me.pictureBoxPreview.TabStop = False
         '
@@ -212,10 +213,11 @@ Partial Class frmConfig
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(834, 756)
+        Me.ClientSize = New System.Drawing.Size(850, 775)
         Me.Controls.Add(Me.TreeListCameras)
         Me.Controls.Add(Me.pictureBoxPreview)
         Me.Controls.Add(Me.PanelControl1)
+        Me.IconOptions.Icon = CType(resources.GetObject("frmConfig.IconOptions.Icon"), System.Drawing.Icon)
         Me.Name = "frmConfig"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "HikVision Configuration"

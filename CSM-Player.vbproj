@@ -140,6 +140,9 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CSM\SharedAssemblyInfo.vb">
+      <Link>SharedAssemblyInfo.vb</Link>
+    </Compile>
     <Compile Include="frmConfig.Designer.vb">
       <DependentUpon>frmConfig.vb</DependentUpon>
     </Compile>

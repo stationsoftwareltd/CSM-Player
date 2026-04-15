@@ -4,6 +4,32 @@ Imports System.Runtime.InteropServices
 Imports MySqlConnector
 
 Public Class frmMain
+
+    ' --- Hidden Hikvision SDK Config APIs ---
+    <DllImport("HCNetSDK.dll")>
+    Private Shared Function NET_DVR_GetSDKLocalCfg(enumType As Integer, lpOutBuff As IntPtr) As Boolean
+    End Function
+
+    <DllImport("HCNetSDK.dll")>
+    Private Shared Function NET_DVR_SetSDKLocalCfg(enumType As Integer, lpInBuff As IntPtr) As Boolean
+    End Function
+
+    ' --- Safe Hikvision Configuration Structure ---
+    <StructLayout(LayoutKind.Sequential)>
+    Public Structure NET_DVR_LOCAL_GENERAL_CFG
+        Public byExceptionCbDirectly As Byte
+        Public byNotSplitRecordFile As Byte
+        Public byResumePlayback As Byte
+        Public byEnableFileSearch As Byte
+        Public byNoQuickAdd As Byte
+        Public byVideoUpDimenchange As Byte
+        Public byFastCaptureTarget As Byte
+        Public byUseGPIFilter As Byte
+        Public byVcaDrawMode As Byte ' <--- The magic byte! 0 = Draw, 1 = Hide
+        <MarshalAs(UnmanagedType.ByValArray, SizeConst:=247)>
+        Public byRes() As Byte
+    End Structure
+
     ' This variable stores your active session ID. 
     ' A value of -1 means you are not logged in.
     Private m_lUserID As Integer = -1
@@ -83,6 +109,28 @@ Public Class frmMain
             MessageBox.Show("Hikvision SDK Initialization Failed! Check DLLs.")
             Return
         End If
+
+        ' --- NEW LOGIC: DISABLE GREEN MOTION SQUARES (VCA INFO) SAFELY ---
+        ' 17 = NET_DVR_LOCAL_CFG_TYPE_GENERAL
+        Dim ptr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(GetType(NET_DVR_LOCAL_GENERAL_CFG)))
+        Try
+            If NET_DVR_GetSDKLocalCfg(17, ptr) Then
+                ' 1. Safely convert the memory to our .NET Structure
+                Dim cfg As NET_DVR_LOCAL_GENERAL_CFG = CType(Marshal.PtrToStructure(ptr, GetType(NET_DVR_LOCAL_GENERAL_CFG)), NET_DVR_LOCAL_GENERAL_CFG)
+
+                ' 2. Turn off the green boxes (1 = Do not draw)
+                cfg.byVcaDrawMode = 1
+
+                ' 3. Safely pack it back into memory and send it to the SDK
+                Marshal.StructureToPtr(cfg, ptr, False)
+                NET_DVR_SetSDKLocalCfg(17, ptr)
+            End If
+        Catch ex As Exception
+            Console.WriteLine("Failed to suppress VCA boxes: " & ex.Message)
+        Finally
+            Marshal.FreeHGlobal(ptr) ' Prevent memory leaks
+        End Try
+        ' -----------------------------------------------------------
 
         ' 3. Handle Configuration Mode
         If m_isConfigMode Then

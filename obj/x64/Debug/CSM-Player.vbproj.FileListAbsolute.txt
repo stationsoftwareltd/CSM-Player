@@ -64,4 +64,3 @@ C:\VS2022\CSM-Player\obj\x64\Debug\CSM-Player.vbproj.Up2Date
 C:\VS2022\CSM-Player\obj\x64\Debug\CSM-Player.exe
 C:\VS2022\CSM-Player\obj\x64\Debug\CSM-Player.xml
 C:\VS2022\CSM-Player\obj\x64\Debug\CSM-Player.pdb
-C:\VS2022\CSM-Player\obj\x64\Debug\CSM-Player.exe.config

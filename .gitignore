@@ -3,3 +3,6 @@ obj/
 
 # Build output
 bin/
+
+# Visual Studio local cache
+.vs/

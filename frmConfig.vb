@@ -49,11 +49,12 @@ Public Class frmConfig
         ' Clear the TreeList so it starts fresh
         TreeListCameras.ClearNodes()
 
-        ' Grab the details from the textboxes
         Dim ip As String = tbNVRIP.Text
-        Dim port As Short
-        If Not Short.TryParse(tbPort.Text, port) Then
-            MessageBox.Show("Please enter a valid Port Number.", "Invalid Port", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Dim port As Integer
+
+        ' Parse as Integer and validate standard network port bounds
+        If Not Integer.TryParse(tbPort.Text, port) OrElse port < 1 OrElse port > 65535 Then
+            MessageBox.Show("Please enter a valid Port Number (1-65535).", "Invalid Port", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
 

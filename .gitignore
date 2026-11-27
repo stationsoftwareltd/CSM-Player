@@ -6,3 +6,6 @@ bin/
 
 # Visual Studio local cache
 .vs/
+
+# Per-user project settings (debug start arguments)
+*.user
